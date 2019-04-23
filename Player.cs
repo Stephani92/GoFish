@@ -74,27 +74,33 @@ namespace GoFish
             return Card;
             
         }
+        Deck cardsAsk = new Deck() { };
         public void AskForACard(List<Player> players, int myIndex, Deck stock)
         {
-
+            deck.PullOutValue(stock.Deal().Value);
         }
-        public void AskForACard2 (List<Player> players, int myIndex, 
+        public void AskForACard (List<Player> players, int myIndex, 
             Deck stock, Values values)
         {
             textBox.Text = Name + " is needing of " + values+
                 Environment.NewLine;
-            List<Deck> cardsAsk = new List<Deck>();
+            
             for (int i = 0; i < players.Count; i++)
             {
                 
                 if (players[i].deck.ContainValue(values))
                 {
-                    cardsAsk.Add(players[i].DoYouHaneAny(values));
+                    cardsAsk = players[i].DoYouHaneAny(values);
                 }
             }
-            if (cardsAsk.Count > 0)
+            if (cardsAsk.cards.Count > 0)
             {
+                deck.PullOutValue((Values)random.Next(cardsAsk.cards.Count));
 
+            }
+            else
+            {
+                AskForACard(players,myIndex,stock);
             }
         }
     }
