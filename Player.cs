@@ -7,15 +7,16 @@ namespace GoFish
     class Player
     {
         private string name;
-        private string Name { get { return Name; } }
+        public string Name { get { return Name; } }
         private Random random;
-        private Deck deck;
+        public Deck deck;
         private TextBox textBox;
+        public Dictionary<Values, int> Placas;
 
-        public Player(string Name, TextBox textBox)
+        public Player(string Name,Random random,TextBox textBox)
         {
             name = Name;
-            this.random = new Random();
+            this.random = random;
             this.textBox = textBox;
             List<Deck> deck = new List<Deck>();
             textBox.Text = Name + "Has just joined the game"
@@ -47,6 +48,19 @@ namespace GoFish
             return books;
         }
 
+        public void PlacaPonto(Values value)
+        {
+            int NumberCards = 0;
+            foreach (Cards card in deck.cards)
+            {
+                if (card.Value == value)
+                {
+                    NumberCards++;
+                }
+                Placas.Add(value, NumberCards);
+            }            
+        }
+
         public Cards GetRandomValue(List<Cards> cards)
         {
             //Este metodo obtem um valor aleatorio - 
@@ -57,13 +71,13 @@ namespace GoFish
 
         }
 
-        Deck Card = new Deck();
+       private Deck Card = new Deck();
         public Deck DoYouHaneAny(Values value)
         {   
             // se vc tem a carta com um certo valor 
             //
                 
-            for (int i = 0; i < deck.Count; i++)
+            for (int i = 0; i <= deck.cards.Count; i++)
             {
                 if (deck.cards[i].Value == value)
                 {
@@ -74,34 +88,35 @@ namespace GoFish
             return Card;
             
         }
-        Deck cardsAsk = new Deck() { };
-        public void AskForACard(List<Player> players, int myIndex, Deck stock)
+        
+        public void AskForACard( Deck stock)
         {
-            deck.PullOutValue(stock.Deal().Value);
+            //Carta aleatoria do stock
+
+            deck.Add(stock.Deal((int)GetRandomValue(stock.cards).Value));
         }
-        public void AskForACard (List<Player> players, int myIndex, 
+
+        public bool AskForACard (List<Player> players, int myIndex, 
             Deck stock, Values values)
         {
+            // value especifico 
             textBox.Text = Name + " is needing of " + values+
                 Environment.NewLine;
             
-            for (int i = 0; i < players.Count; i++)
+            for (int i = 0; i < players.Count || i != myIndex; i++)
             {
                 
                 if (players[i].deck.ContainValue(values))
                 {
-                    cardsAsk = players[i].DoYouHaneAny(values);
+                    for (int j  = 0; j <= players[i].DoYouHaneAny(values).Count; j++)
+                    {
+                        deck.Add(players[i].DoYouHaneAny(values).cards[j]);
+                    }
+                    return true;
+                    
                 }
             }
-            if (cardsAsk.cards.Count > 0)
-            {
-                deck.PullOutValue((Values)random.Next(cardsAsk.cards.Count));
-
-            }
-            else
-            {
-                AskForACard(players,myIndex,stock);
-            }
+            return false;
         }
     }
 }

@@ -61,7 +61,7 @@ namespace GoFish
         }
         
         
-        public void Sort()
+        public void Sort(CardBySort cardBySort)
         {
             cards.Sort(new CardBySort());
         }
