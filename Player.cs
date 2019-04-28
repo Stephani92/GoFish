@@ -7,18 +7,18 @@ namespace GoFish
     class Player
     {
         private string name;
-        public string Name { get { return Name; } }
+        public string Name { get { return name; } }
         private Random random;
         public Deck deck;
         private TextBox textBox;
         public Dictionary<Values, int> Placas;
 
-        public Player(string Name,Random random,TextBox textBox)
+        public Player(string Name,Random random,TextBox textBox, Cards card)
         {
             name = Name;
             this.random = random;
+            deck = new Deck(card);
             this.textBox = textBox;
-            List<Deck> deck = new List<Deck>();
             textBox.Text = Name + "Has just joined the game"
                 + Environment.NewLine;
         }
@@ -64,15 +64,18 @@ namespace GoFish
         public Cards GetRandomValue(List<Cards> cards)
         {
             //Este metodo obtem um valor aleatorio - 
-            //mas deve se uma q exista no trabalho
+            // q exista no trabalho
             int c;
             c = random.Next(cards.Count);
             return cards[c] ;
 
         }
-
+        public void takeCard(Cards cards)
+        {
+            deck.Add(cards);
+        }
        private Deck Card = new Deck();
-        public Deck DoYouHaneAny(Values value)
+        public Deck DoYouHaveAny(Values value)
         {   
             // se vc tem a carta com um certo valor 
             //
@@ -108,9 +111,9 @@ namespace GoFish
                 
                 if (players[i].deck.ContainValue(values))
                 {
-                    for (int j  = 0; j <= players[i].DoYouHaneAny(values).Count; j++)
+                    for (int j  = 0; j <= players[i].DoYouHaveAny(values).Count; j++)
                     {
-                        deck.Add(players[i].DoYouHaneAny(values).cards[j]);
+                        deck.Add(players[i].DoYouHaveAny(values).cards[j]);
                     }
                     return true;
                     
@@ -118,5 +121,7 @@ namespace GoFish
             }
             return false;
         }
+        public IEnumerable<string> GetCardNames() { return deck.GetCardNames(); }
+        
     }
 }

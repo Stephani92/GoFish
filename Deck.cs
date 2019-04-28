@@ -20,9 +20,10 @@ namespace GoFish
                 }
             }
         }
-        public Deck(IEnumerable<Cards> initialCards)
+        public Deck(Cards card)
         {
-            cards = new List<Cards>(initialCards);
+            cards = new List<Cards>();
+            cards.Add(card);
         }
 
         public IEnumerable<string> GetCardNames()
@@ -48,9 +49,10 @@ namespace GoFish
             cards = NewCards;
         }
 
-        public void Add(Cards cardToAdd)
+        public Cards Add(Cards cardToAdd)
         {
             cards.Add(cardToAdd);
+            return cardToAdd;
         }
 
         public Cards Deal(int index)
@@ -92,7 +94,7 @@ namespace GoFish
 
         public Deck PullOutValue( Values value)
         {
-            Deck deckToReturn = new Deck(new Cards[] { });
+            Deck deckToReturn = new Deck();
             for (int i = cards.Count - 1; i >= 0; i++)
             {
                 if (cards[i].Value == value)
@@ -121,6 +123,7 @@ namespace GoFish
                 return false;               
             }
         }
+        
     }
 }
 

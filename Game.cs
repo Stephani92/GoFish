@@ -16,31 +16,37 @@ namespace GoFish
         public Game(string PlayerName, IEnumerable<string> opponentNames, 
             TextBox textBox)
         {
+            stock = new Deck();
             Random random = new Random();
             textBoxonForm = textBox;
-            players = new List<Player>();
-            players.Add(new Player(PlayerName, random, textBoxonForm));
+            players = new List<Player>
+            {
+                new Player(PlayerName, random, textBoxonForm, stock.Deal())
+            };
             foreach (string player in opponentNames)
             {
-                players.Add(new Player(player, random, textBoxonForm));
+                players.Add(new Player(player, random, textBoxonForm, stock.Deal()));
             }
 
             books = new Dictionary<Values, Player>();
-            stock = new Deck();
+            
             Deal();
            // players[0].SortHand();
 
         }
         private void Deal()
         {
-            stock.Shuffle();            
-            foreach (Player player in players)
+            stock.Shuffle();
+            for (int i = 0; i < 5; i++)
             {
-                for (int i = 0; i <=5; i++)
+                foreach (Player item in players)
                 {
-                    player.deck.Add(stock.Deal());
+                    item.takeCard(stock.Deal());
                 }
-                player.PullOutBooks();
+                foreach (Player item in players)
+                {
+                    PullOutBooks(item);
+                }
             }
         }
 
@@ -80,7 +86,7 @@ namespace GoFish
 
                 return false;
             }
-            if (player.deck.Count >= 5)
+            if (player.deck.Count >= 5 & stock.Count >= 3)
             {
                 for (int i = 0; i <= 13; i++)
                 {
@@ -96,11 +102,77 @@ namespace GoFish
         }
         public string DescribeBooks()
         {
-
+            string booksRelatorio = "";
+            foreach (int key in books.Keys)
+            {
+                booksRelatorio += "O  "+books[(Values)key].Name + "Tem "+ books[(Values)key]+Environment.NewLine;
+            }
+            return booksRelatorio;
         }
+        Dictionary< int, Player> tabela = new Dictionary<int, Player>();
+        Dictionary<int, Player> tabFinal = new Dictionary<int, Player>();
+        public NumberByHight resul = new NumberByHight();
+        string stri;
         public string GetWinnerName()
         {
+            foreach (Player player in players)
+            {
+                int NumberBook = 0;
+                foreach (Player item in books.Values)
+                {
+                    if (player.Name == item.Name)
+                    {
+                        NumberBook++;
+                    }
 
+                }
+                tabela.Add( NumberBook, player);
+            }
+            List<int> list = new List<int>();
+            foreach (int item in tabela.Keys)
+            {
+                list.Add(item);
+            }
+            list.Sort(resul);
+            
+            foreach (int pontos in tabela.Keys)
+            {
+                foreach (int item in list)
+                {
+                    if (pontos == item)
+                    {
+                        tabFinal.Add(item, tabela[item]);
+                    }
+                }
+            }
+            foreach (int item in tabFinal.Keys)
+            {
+                stri += tabFinal[item].Name;
+            }
+            
+            return stri;
+        }
+        public IEnumerable<string> GetPlayerCardNames()
+        {
+            return players[0].GetCardNames();
+        }
+        public string DescribePlayerHands()
+        {
+            string describe = "";
+            for (int i = 0; i < players.Count; i++)
+            {
+                describe += players[i].Name + " has " + players[i].deck.Count;
+                if (players[i].deck.Count == 1)
+                {
+                    describe += " card." + Environment.NewLine;
+                }
+                else
+                {
+                    describe += " cards" + Environment.NewLine;
+                }
+            }
+            describe += "The stock has " + stock.cards.Count + " cards left.";
+            return describe;
         }
     }
 }
