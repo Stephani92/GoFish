@@ -9,7 +9,7 @@ namespace GoFish
 {   
     class Game
     {
-        private List<Player> players;
+        public List<Player> players;
         private Dictionary<Values, Player> books;
         private Deck stock;
         private TextBox textBoxonForm;
@@ -52,49 +52,47 @@ namespace GoFish
 
         public bool PlayOneRound(int selectedPlayerCard)
         {
-            for (int i = 0; i <=3; i++)
-            { Random random = new Random();
-                players[i].AskForACard(players, i, stock, (Values)random.Next(1,14));
+            Values cardToAskfor = players[0].deck.Peek(selectedPlayerCard).Value;
+            for (int i = 0; i < players.Count; i++)
+            {
+                if (i == 0)
+                {
+                    players[0].AskForACard(players, 0, stock, cardToAskfor);
+                }
+                else
+                {
+                    players[i].AskForACard(players, i, stock);
+                }
                 if (PullOutBooks(players[i]))
                 {
-                    textBoxonForm.Text = players[i].Name + " Comprou cardas do stock.";
-                    return false;
+                    textBoxonForm.Text += players[i].Name + " drew a new hand" + Environment.NewLine;
+                    int card = 1;
+
+                    while (card<= 5 && stock.Count > 0)
+                    {
+                        players[i].takeCard(stock.Deal());
+                        card++;
+                    }
+                }
+                players[0].SortHand();
+                if (stock.Count == 0)
+                {
+                    textBoxonForm.Text = "The stock is out of cards. Game Over!" + Environment.NewLine;
+                    return true;
                 }
             }
-            CardBySort CardBySort = new CardBySort();
-
-            players[0].deck.Sort(CardBySort);
-            if (stock.cards.Count < 0)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-
+            return false;
 
         }
         public bool PullOutBooks(Player player)
         {
-            if (player.deck.Count < 5 & stock.Count >= 3)
+            IEnumerable<Values> bookPulled = player.PullOutBooks();
+            foreach (Values item in bookPulled)
             {
-                for (int i = 0; i <= 5; i++)
-                {
-                    player.deck.Add(stock.Deal());
-                }
-
-                return false;
+                books.Add(item, player);
             }
-            if (player.deck.Count >= 5 & stock.Count >= 3)
+            if (player.CardCount == 0)
             {
-                for (int i = 0; i <= 13; i++)
-                {
-                    if (player.deck.HasBook((Values)i))
-                    {
-                        books.Add((Values)i, player);
-                    }
-                }
                 return true;
             }
             return false;
@@ -103,54 +101,61 @@ namespace GoFish
         public string DescribeBooks()
         {
             string booksRelatorio = "";
-            foreach (int key in books.Keys)
+            foreach (Values key in books.Keys)
             {
                 booksRelatorio += "O  "+books[(Values)key].Name + "Tem "+ books[(Values)key]+Environment.NewLine;
             }
             return booksRelatorio;
         }
-        Dictionary< int, Player> tabela = new Dictionary<int, Player>();
-        Dictionary<int, Player> tabFinal = new Dictionary<int, Player>();
-        public NumberByHight resul = new NumberByHight();
-        string stri;
+        
         public string GetWinnerName()
         {
-            foreach (Player player in players)
+            Dictionary<string, int> winner = new Dictionary<string, int>();
+            foreach (Values values in books.Keys)
             {
-                int NumberBook = 0;
-                foreach (Player item in books.Values)
+                string name = books[values].Name;
+                if (winner.ContainsKey(name))
                 {
-                    if (player.Name == item.Name)
-                    {
-                        NumberBook++;
-                    }
-
+                    winner[name]++;
                 }
-                tabela.Add( NumberBook, player);
-            }
-            List<int> list = new List<int>();
-            foreach (int item in tabela.Keys)
-            {
-                list.Add(item);
-            }
-            list.Sort(resul);
-            
-            foreach (int pontos in tabela.Keys)
-            {
-                foreach (int item in list)
+                else
                 {
-                    if (pontos == item)
-                    {
-                        tabFinal.Add(item, tabela[item]);
-                    }
+                    winner.Add(name, 1);
                 }
             }
-            foreach (int item in tabFinal.Keys)
+                
+            int mostBook = 0;
+            foreach (string Name in winner.Keys)
             {
-                stri += tabFinal[item].Name;
+                if (winner[Name] > mostBook)
+                {
+                    mostBook = winner[Name];
+                }
+            }
+            bool tie = false;
+            string winnerList = "";
+            foreach (string item in winner.Keys)
+            {
+                if (winner[item] == mostBook)
+                {
+                    if (!String.IsNullOrEmpty(winnerList))
+                    {
+                        winnerList += " and ";
+                        tie = true;
+                    }
+                    winnerList += item;
+                }
+            }
+            winnerList += " with " + mostBook + " books ";
+            if (tie)
+            {
+                return "A tie between " + winnerList;
+            }
+            else
+            {
+                return winnerList;
             }
             
-            return stri;
         }
         public IEnumerable<string> GetPlayerCardNames()
         {

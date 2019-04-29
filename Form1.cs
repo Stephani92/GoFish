@@ -15,6 +15,7 @@ namespace GoFish
         public Form1()
         {
             InitializeComponent();
+
         }
         Game game;
         private void button1_Click(object sender, EventArgs e)
@@ -29,6 +30,7 @@ namespace GoFish
             textBox2.Enabled = false;
             btnAskForaCard.Enabled = true;
             UpdateForm();
+            
         }
         private void UpdateForm()
         {
@@ -56,11 +58,20 @@ namespace GoFish
                 textBox1.Text += " the winner is .. " + game.GetWinnerName();
                 textBox3.Text = game.DescribeBooks();
                 btnAskForaCard.Enabled = false;
+                for (int i = 1; i <= game.players.Count; i++)
+                {
+                    Values cardPeek = game.players[i].GetRandomValue();
+                    game.PlayOneRound((int)cardPeek);
+
+                }
             }
             else
             {
+                
+                textBox3.Text = game.DescribeBooks();
                 UpdateForm();
             }
+            
         }
     }
 }

@@ -11,13 +11,12 @@ namespace GoFish
         private Random random;
         public Deck deck;
         private TextBox textBox;
-        public Dictionary<Values, int> Placas;
 
-        public Player(string Name,Random random,TextBox textBox, Cards card)
+        public Player(string Name,Random random,TextBox textBox, Cards stock)
         {
             name = Name;
             this.random = random;
-            deck = new Deck(card);
+            this.deck = new Deck(stock);
             this.textBox = textBox;
             textBox.Text = Name + "Has just joined the game"
                 + Environment.NewLine;
@@ -48,80 +47,78 @@ namespace GoFish
             return books;
         }
 
-        public void PlacaPonto(Values value)
-        {
-            int NumberCards = 0;
-            foreach (Cards card in deck.cards)
-            {
-                if (card.Value == value)
-                {
-                    NumberCards++;
-                }
-                Placas.Add(value, NumberCards);
-            }            
-        }
-
-        public Cards GetRandomValue(List<Cards> cards)
+        
+        public Values GetRandomValue()
         {
             //Este metodo obtem um valor aleatorio - 
             // q exista no trabalho
-            int c;
-            c = random.Next(cards.Count);
-            return cards[c] ;
+            Values randomCard = deck.Deal(random.Next(deck.Count)).Value;
+            return randomCard;
 
         }
         public void takeCard(Cards cards)
         {
             deck.Add(cards);
         }
-       private Deck Card = new Deck();
         public Deck DoYouHaveAny(Values value)
-        {   
+        {
             // se vc tem a carta com um certo valor 
             //
-                
-            for (int i = 0; i <= deck.cards.Count; i++)
-            {
-                if (deck.cards[i].Value == value)
-                {
-                    Card.cards.Add(deck.cards[i]);
-                }
-            }            
-            textBox.Text = Name + "has" + Card.cards.Count + " " + value;
+
+            Deck Card = deck.PullOutValue(value);          
+            textBox.Text = Name + " has " + Card.cards.Count + " " + value;
             return Card;
             
         }
+        public int CardCount { get
+            {
+                return deck.Count;
+            } }
         
-        public void AskForACard( Deck stock)
+        public void AskForACard(List<Player> players, int myIndex,
+            Deck stock)
         {
             //Carta aleatoria do stock
-
-            deck.Add(stock.Deal((int)GetRandomValue(stock.cards).Value));
+            Values randomValue = GetRandomValue();
+            
         }
 
-        public bool AskForACard (List<Player> players, int myIndex, 
+        public void AskForACard (List<Player> players, int myIndex, 
             Deck stock, Values values)
         {
             // value especifico 
             textBox.Text = Name + " is needing of " + values+
                 Environment.NewLine;
-            
-            for (int i = 0; i < players.Count || i != myIndex; i++)
+            int cardsGiven = 0;
+            for (int i = 0; i >= players.Count ; i++)
             {
-                
-                if (players[i].deck.ContainValue(values))
+                if (i != myIndex)
                 {
-                    for (int j  = 0; j <= players[i].DoYouHaveAny(values).Count; j++)
+                    Player player = players[i];
+                    Deck CarddsGiven = player.DoYouHaveAny(values);
+                    cardsGiven += deck.Count;
+                    while (CarddsGiven.Count > 0)
                     {
-                        deck.Add(players[i].DoYouHaveAny(values).cards[j]);
+                        this.deck.Add(CarddsGiven.Deal());
                     }
-                    return true;
-                    
                 }
             }
-            return false;
+            if (cardsGiven ==0)
+            {
+                textBox.Text += Name + " must draw the stock." + Environment.NewLine;
+                deck.Add(stock.Deal());
+            }
         }
         public IEnumerable<string> GetCardNames() { return deck.GetCardNames(); }
-        
+
+        public void SortHand()
+        {
+            deck.Sort(new CardBySort());
+        }
+
+        public Cards Peek(int cardPeek)
+        {
+            return deck.Peek(cardPeek);
+        }
     }
 }
